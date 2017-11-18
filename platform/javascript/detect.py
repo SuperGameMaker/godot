@@ -96,7 +96,7 @@ def configure(env):
     env.Append(CPPFLAGS=['-DGLES3_ENABLED'])
 
     # These flags help keep the file size down
-    env.Append(CPPFLAGS=["-fno-exceptions", '-DNO_SAFE_CAST', '-fno-rtti'])
+    env.Append(CPPFLAGS=["-fno-exceptions", '-DNO_SAFE_CAST'])
 
     if env['javascript_eval']:
         env.Append(CPPFLAGS=['-DJAVASCRIPT_EVAL_ENABLED'])
