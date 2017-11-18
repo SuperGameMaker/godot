@@ -8,27 +8,9 @@ cache: ccache
 
 matrix:
   include:
-    - env: STATIC_CHECKS=yes
-      os: linux
-      compiler: clang
-    - env: GODOT_TARGET=x11 TOOLS=yes
+    - env: GODOT_TARGET=javascript TOOLS=yes WASM=yes
       os: linux
       compiler: gcc
-    - env: GODOT_TARGET=x11 TOOLS=no
-      os: linux
-      compiler: clang
-    #- env: GODOT_TARGET=windows TOOLS=yes
-    #  os: linux
-    #  compiler: gcc
-    - env: GODOT_TARGET=android TOOLS=no
-      os: linux
-      compiler: gcc
-    - env: GODOT_TARGET=osx TOOLS=yes
-      os: osx
-      compiler: clang
-    #- env: GODOT_TARGET=iphone TOOLS=no
-    #  os: osx
-    #  compiler: clang
 
 addons:
   apt:
@@ -60,6 +42,9 @@ addons:
 
       # For style checks.
       - clang-format-3.9
+      
+services:
+  - docker
 
 install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ] && [ "$GODOT_TARGET" = "android" ]; then
@@ -74,23 +59,16 @@ install:
     fi
 
 before_script:
+  - docker run -dit --name emscripten -v $(pwd):/src trzeci/emscripten:sdk-incoming-64bit bash
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then
       export CCACHE="/usr/bin/ccache";
-    fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then
-      export CCACHE="/usr/local/bin/ccache";
-      export PATH="/usr/local/opt/ccache/libexec:$PATH";
-    fi
-  - if [ "$GODOT_TARGET" = "android" ]; then
-      export ANDROID_HOME=$TRAVIS_BUILD_DIR/godot-dev/build-tools/android-sdk;
-      export ANDROID_NDK_ROOT=$TRAVIS_BUILD_DIR/godot-dev/build-tools/android-ndk;
     fi
 
 script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS verbose=yes progress=no;
+      scons -j2 CC=$CC CXX=$CXX platform=$GODOT_TARGET TOOLS=$TOOLS verbose=yes progress=no wasm=yes;
     fi
 
 after_success:
